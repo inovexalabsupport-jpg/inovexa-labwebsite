@@ -1,0 +1,9 @@
+export default async function handler(request, response) {
+  if (request.method !== 'POST') return response.status(405).json({ error: 'Method not allowed' });
+  const body = typeof request.body === 'string' ? JSON.parse(request.body) : request.body || {};
+  const message = typeof body.message === 'string' ? body.message.trim() : '';
+  if (!message) return response.status(400).json({ error: 'Message is required' });
+  if (!process.env.GEMINI_API_KEY) return response.status(500).json({ error: 'AI service is not configured' });
+  const system = 'You are Inovexa AI, the friendly website assistant for Inovexa Lab in Ghana. Explain services clearly: web development, mobile app development, software development, IT solutions, UI/UX design, digital solutions, business technology solutions, and technology consulting. Help visitors describe their project, collect useful requirements, and suggest contacting inovexalabsupport@gmail.com or WhatsApp +233539075420. Be concise, professional, warm, and never invent prices, guarantees, clients, or company facts.';
+  try { const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ system_instruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [{ text: message }] }] }) }); const data = await apiResponse.json(); if (!apiResponse.ok) return response.status(502).json({ error: data.error?.message || 'AI provider error' }); const reply = data.candidates?.[0]?.content?.parts?.[0]?.text; return response.status(200).json({ reply: reply || 'Please contact our team directly so we can help.' }); } catch { return response.status(502).json({ error: 'AI provider unavailable' }); }
+}
