@@ -8,6 +8,7 @@
   <title>Inovexa Lab — Where Ideas Become Innovation</title>
   <link rel="icon" href="brand.png">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="ai-assistant.css">
 </head>
 <body>
   <div class="progress"></div>
@@ -174,8 +175,7 @@
         <p>Use the form to tell us what you want to build. Contact details can be updated as the company information is finalized.</p>
       </div>
       <div class="contact-grid">
-        <form class="contact-form reveal" id="contactForm">
-          <label class="hidden" aria-hidden="true">Leave this field empty<input name="website" tabindex="-1" autocomplete="off"></label>
+        <form class="contact-form reveal" id="contactForm" data-formspree-endpoint="https://formspree.io/f/xyekvooo">
           <label>Name<input required name="name" autocomplete="name" placeholder="Your name"></label>
           <label>Email<input required type="email" name="email" autocomplete="email" placeholder="you@example.com"></label>
           <label>Subject<input required name="subject" placeholder="How can we help?"></label>
@@ -203,7 +203,7 @@
     <div class="footer-links">
       <a href="#home">Home</a><a href="#about">About</a><a href="#services">Services</a><a href="#projects">Projects</a><a href="#contact">Contact</a>
       <a href="https://www.instagram.com/inovexalabsupport/" target="_blank" rel="noopener">Instagram</a>
-      <a href="https://www.tiktok.com/@inovexalabsupport" target="_blank" rel="noopener">TikTok</a><a href="admin.html" rel="nofollow">Admin</a>
+      <a href="https://www.tiktok.com/@inovexalabsupport" target="_blank" rel="noopener">TikTok</a>
     </div>
     <p>© 2026 Inovexa Lab. All Rights Reserved.</p>
   </footer>
@@ -216,19 +216,22 @@ const progress=document.querySelector('.progress');
 window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-innerHeight;progress.style.width=(scrollY/h*100)+'%'},{passive:true});
 const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.12});
 document.querySelectorAll('.reveal').forEach(e=>obs.observe(e));
-document.querySelector('#contactForm').addEventListener('submit',async e=>{
+document.querySelector('#contactForm').addEventListener('submit',e=>{
  e.preventDefault();
- const form=e.currentTarget, f=new FormData(form), note=document.querySelector('#formNote');
- if(String(f.get('website')||'').trim()) return;
- const button=form.querySelector('button[type=submit]'); button.disabled=true; button.textContent='Sending…'; note.textContent='';
- try {
-   const response=await fetch('/api/inquiries',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.get('name'),email:f.get('email'),subject:f.get('subject'),message:f.get('message')})});
-   const result=await response.json(); if(!response.ok) throw new Error(result.error||'Could not send your inquiry.');
-   note.textContent=result.message||'Thanks! Your inquiry has been received.'; form.reset();
- } catch(err) {
-   note.textContent='The online inquiry service is not connected yet. Please contact us at inovexalabsupport@gmail.com or WhatsApp us.';
- } finally {button.disabled=false;button.textContent='Send Message →'}
+ const f=new FormData(e.target);
+ const subject=encodeURIComponent(f.get('subject'));
+ const body=encodeURIComponent('Name: '+f.get('name')+'\nEmail: '+f.get('email')+'\n\n'+f.get('message'));
+ const endpoint=e.target.dataset.formspreeEndpoint;
+ fetch(endpoint,{method:'POST',body:f,headers:{Accept:'application/json'}}).then(response=>{if(!response.ok) throw new Error('send failed'); e.target.reset(); document.querySelector('#formNote').textContent='Thanks — your message has been sent successfully.';}).catch(()=>{document.querySelector('#formNote').textContent='Something went wrong. Please try again or use WhatsApp.';});
 });
 </script>
+<script>
+  const adminEdits = JSON.parse(localStorage.getItem('inovexa-admin-edits') || '{}');
+  document.querySelectorAll('.service').forEach(service => {
+    const title = service.querySelector('h3')?.textContent.trim();
+    if (title && adminEdits[title]) service.querySelector('p').textContent = adminEdits[title];
+  });
+</script>
+<script src="ai-assistant.js"></script>
 </body>
 </html>

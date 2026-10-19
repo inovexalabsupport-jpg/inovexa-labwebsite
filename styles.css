@@ -25,5 +25,3 @@ a{color:inherit;text-decoration:none}button,input,textarea{font:inherit}.progres
 .btn-whatsapp{border:1px solid rgba(41,210,116,.45);background:rgba(10,67,43,.3);color:#d8ffe9}
 .btn-whatsapp:hover{border-color:rgba(41,210,116,.8);box-shadow:0 12px 30px rgba(20,180,100,.12)}
 .contact-details a:hover{color:var(--cyan)}
-
-.hidden{display:none!important}
